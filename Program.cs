@@ -63,6 +63,39 @@ app.MapGet("/jokes/ten", () =>
 .Produces<Joke>(200, "application/json")
 .ProducesProblem(500);
 
+app.MapGet("/prime/{start}/{end}", async (int start, int end) =>
+{
+    var numbers =
+        Enumerable.Range(start, end - start)
+            .Where(IsPrime)
+            .Select(number => number)
+            .ToList();
+    app.Logger.LogInformation("Prime numbers between {start} and {end} are {numbers}", start, end, numbers);
+    await Task.Delay(1000);
+    return Results.Ok(numbers);
+})
+.Produces<Joke>(200, "application/json")
+.ProducesProblem(500).ExcludeFromDescription();
+
+bool IsPrime(int number)
+{
+    bool CalculatePrime(int value)
+    {
+        var possibleFactors = Math.Sqrt(number);
+        for (var factor = 2; factor <= possibleFactors; factor++)
+        {
+            if (value % factor == 0)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    return number > 1 && CalculatePrime(number);
+}
+
 app.MapGet("/jokes/{number:int}", (int number) =>
 {
     if (jokes == null)
